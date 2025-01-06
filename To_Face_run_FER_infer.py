@@ -16,8 +16,7 @@ import pickle
 import torch.nn.functional as F
 import os
 
-from teacher_Poster_v2.POSTER_V2.models.PosterV2_7cls import *
-from teacher_Poster_v2.POSTER_V2.data_preprocessing.sam import SAM
+
 import warnings
 from sklearn import metrics
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
@@ -26,7 +25,7 @@ import torch.utils.data as data
 import os
 import argparse
 from sklearn.metrics import f1_score, confusion_matrix
-from teacher_Poster_v2.POSTER_V2.data_preprocessing.sam import SAM
+
 import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 import torch.optim

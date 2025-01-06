@@ -1118,83 +1118,7 @@ class Toface_Decoder_final(nn.Module):
         return out
 
 
-# class ToFace_Unet_3Dcnn(nn.Module):
-#     def __init__(self, out_size):
-#         super(ToFace_Unet_3Dcnn, self).__init__()
-#         # self.upsample = Upsample1()
-#         # self.encoder = ToFace_Encoder(28)
-#         self.up = UNet3D()
-#         out_channels = out_size/8 #eg:16*16 output should has 4 output channels
-#         self.out_size = out_size
-        
-#         out_channels = int(out_channels**2)
-#         self.out_channels = out_channels
-#         # print(out_channels)
-#         self.branch1 = Toface_Decoder_final(out_channels)
-#         self.branch2 = Toface_Decoder_final(out_channels)
-#         self.swt = ToFace_Unet_swt()
-#         # self.swt = ToFace_Unet_Dwt_locate()
-#         # self.dwt = ToFace_Unet_Dwt()
-#         self.peak = ToFace_Unet_Intense()
-#         # self.peak = ToFace_Unet_Peak_cnn()
-#         self.depth_fc = nn.Linear(560, 560)
-#         # self.classifier = FER_Classifier(640)
 
-
-#     def forward(self, x):
-#         start_time = time.time()
-#         # upsample = self.upsample(x)
-#         upsample,e1,e2,e3 = self.up(x)
-#         upsample = upsample.permute(0,3,1,2)
-#         e1 = e1.permute(0,3,1,2)
-#         e2 = e2.permute(0,3,1,2)
-#         e3 = e3.permute(0,3,1,2)
-#         swt = self.swt(upsample)
-#         print('swt:',time.time()-start_time)
-#         start_time = time.time()
-#         # width = self.dwt(upsample)
-#         # encoded, e1, e2 = self.encoder(x)
-#         # print(swt.shape)
-#         # print(encoded.shape)
-#         # print(swt.shape)
-#         # print(e3.shape)
-#         depth_encoded = torch.cat([swt, e3], dim=1)
-#         # print   (depth_encoded.shape)   
-#         # peak = self.peak(upsample)
-#         # peak = peak.permute(0,3,1,2)
-#         # depth_encoded = torch.cat([encoded,peak], dim=1)
-#         depth = self.branch1(depth_encoded, e1, e2)
-#         # print(depth_encoded.shape)
-#         # print   (depth.shape)
-#         depth = depth.permute(0,2,3,1)
-#         tmp = depth.reshape(-1,self.out_channels)
-#         tmp = (tmp-262.5)/1.875
-#         indicators = torch.zeros(tmp.shape[0],560,device=tmp.device,dtype=torch.float32)
-#         tmp = tmp.long().clamp(0, 560 - 1)
-#         # for i in range(tmp.shape[0]):
-#         #     indicators[i,tmp[i]] = 1
-#         indicators.scatter_(1,tmp,1)
-#         print('depth:',time.time()-start_time)
-#         position = self.depth_fc(indicators)
-#         position = position.view(-1,8,8,560)
-#         position = position.permute(0,3,1,2)
-#         position_up = position*upsample
-#         peak = self.peak(position_up)
-#         # print(peak.shape)
-#         peak = peak.squeeze(-2)
-#         peak = peak.permute(0,3,1,2)
-        
-        
-#         # print(intense.shape)
-#         # print(width.shape)
-#         # print(encoded.shape)
-#         width_encoded = torch.cat([peak, e3], dim=1)
-#         orientation = self.branch2(width_encoded, e1, e2)
-
-#         # classifier_encoded = torch.cat([encoded, peak,swt], dim=1)
-#         # print(classifier_encoded.shape)
-#         # classifier_output = self.classifier(classifier_encoded)
-#         return orientation, depth, upsample
     
 class ToFace_Unet_3Dcnn(nn.Module):
     def __init__(self, out_size):
@@ -1375,46 +1299,7 @@ class UNet3D_complex(nn.Module):
         out = out.permute(0,2,3,4,1).reshape(batch,height,width,-1)
         return out,e1,e2,e3
 
-# class Toface_Decoder_final_complex(nn.Module):
-#     def __init__(self, out_channels):
-#         super(Toface_Decoder_final_complex, self).__init__()
-#         self.upconv1 = nn.Conv2d(int(256), 448, kernel_size=3, padding=1)
-#         self.decoder1 = DoubleConv(448*2, 448)
-#         self.upconv2 = nn.Conv2d(448, 448, kernel_size=3, padding=1)
-#         self.decoder2 = DoubleConv(448*2, 448)
-#         self.decoder2_1 = DoubleConv(448, 448)
-#         self.decoder2_2 = DoubleConv(448, 448)
-#         self.decoder2_3 = DoubleConv(448, 448)
-#         self.upconv3 = nn.Conv2d(448, 448, kernel_size=3, padding=1)
-#         self.decoder3 = DoubleConv(448*2, 448)
-#         self.decoder3_1 = DoubleConv(448, 448)
-#         self.decoder3_2 = DoubleConv(448, 448)
-#         self.decoder3_3 = DoubleConv(448, 448)
 
-#         self.final_conv = nn.Conv2d(448, out_channels, kernel_size=1)
-
-#     def forward(self, m, e1, e2,e3):
-#         u1 = self.upconv1(m)
-#         d1 = self.decoder1(torch.cat([u1, e3], dim=1))
-#         u2 = self.upconv2(d1)
-#         d2 = self.decoder2(torch.cat([u2, e2], dim=1))
-#         d2_1 = self.decoder2_1(d2)
-#         d2_1 = d2_1 + d2
-#         d2_2 = self.decoder2_2(d2_1)
-#         d2_2 = d2_2 + d2_1
-#         d2_3 = self.decoder2_3(d2_2)
-#         d2_3 = d2_3 + d2_2
-#         u3 = self.upconv3(d2_3)
-#         d3 = self.decoder3(torch.cat([u3, e1], dim=1))
-#         d3_1 = self.decoder3_1(d3)
-#         d3_1 = d3_1 + d3
-#         d3_2 = self.decoder3_2(d3_1)
-#         d3_2 = d3_2 + d3_1
-#         d3_3 = self.decoder3_3(d3_2)
-#         d3_3 = d3_3 + d3_2
-
-#         out = self.final_conv(d3_3)
-#         return out
     
 class Toface_Decoder_final_complex(nn.Module):
     def __init__(self, out_channels):

@@ -16,8 +16,7 @@ import pickle
 import torch.nn.functional as F
 import os
 
-from teacher_Poster_v2.POSTER_V2.models.PosterV2_7cls import *
-from teacher_Poster_v2.POSTER_V2.data_preprocessing.sam import SAM
+
 import warnings
 from sklearn import metrics
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
@@ -26,7 +25,7 @@ import torch.utils.data as data
 import os
 import argparse
 from sklearn.metrics import f1_score, confusion_matrix
-from teacher_Poster_v2.POSTER_V2.data_preprocessing.sam import SAM
+
 import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 import torch.optim
@@ -160,48 +159,7 @@ class RecorderMeter(object):
         self.epoch_accuracy[idx, 1] = val_acc
         self.current_epoch = idx + 1
 
-    # def plot_curve(self, save_path):
-    #     title = 'the accuracy/loss curve of train/val'
-    #     dpi = 80
-    #     width, height = 1800, 800
-    #     legend_fontsize = 10
-    #     figsize = width / float(dpi), height / float(dpi)
 
-    #     fig = plt.figure(figsize=figsize)
-    #     x_axis = np.array([i for i in range(self.total_epoch)])  # epochs
-    #     y_axis = np.zeros(self.total_epoch)
-
-    #     plt.xlim(0, self.total_epoch)
-    #     plt.ylim(0, 100)
-    #     interval_y = 5
-    #     interval_x = 5
-    #     plt.xticks(np.arange(0, self.total_epoch + interval_x, interval_x))
-    #     plt.yticks(np.arange(0, 100 + interval_y, interval_y))
-    #     plt.grid()
-    #     plt.title(title, fontsize=20)
-    #     plt.xlabel('the training epoch', fontsize=16)
-    #     plt.ylabel('accuracy', fontsize=16)
-
-    #     y_axis[:] = self.epoch_accuracy[:, 0]
-    #     plt.plot(x_axis, y_axis, color='g', linestyle='-', label='train-accuracy', lw=2)
-    #     plt.legend(loc=4, fontsize=legend_fontsize)
-
-    #     y_axis[:] = self.epoch_accuracy[:, 1]
-    #     plt.plot(x_axis, y_axis, color='y', linestyle='-', label='valid-accuracy', lw=2)
-    #     plt.legend(loc=4, fontsize=legend_fontsize)
-
-    #     y_axis[:] = self.epoch_losses[:, 0]
-    #     plt.plot(x_axis, y_axis, color='g', linestyle=':', label='train-loss-x30', lw=2)
-    #     plt.legend(loc=4, fontsize=legend_fontsize)
-
-    #     y_axis[:] = self.epoch_losses[:, 1]
-    #     plt.plot(x_axis, y_axis, color='y', linestyle=':', label='valid-loss-x30', lw=2)
-    #     plt.legend(loc=4, fontsize=legend_fontsize)
-
-    #     if save_path is not None:
-    #         fig.savefig(save_path, dpi=dpi, bbox_inches='tight')
-    #         print('Saved figure')
-    #     plt.close(fig)
     def plot_curve(self, save_path=None):
         title = 'the accuracy/loss curve of train/val'
         dpi = 80
@@ -497,7 +455,7 @@ def train(data_path, modelname, out_size, use_range_mask):
     class_model = ClassificationNetwork(10, out_size).to(device)
     # class_model.to(device)
     # class_model = ClassificationNetwork_mobilenet(10, out_size).to(device)
-    teacher_model = pyramid_trans_expr2(img_size=224, num_classes=7).cuda()
+
     recorder = RecorderMeter(args.epochs)
     recorder1 = RecorderMeter1(args.epochs)
     checkpoint = torch.load('/data/share/SPAD_TOF/Data_preprocessing/physycal_model/teacher_Poster_v2/POSTER_V2/checkpoint/affectnet-7-model_best.pth')
@@ -505,10 +463,10 @@ def train(data_path, modelname, out_size, use_range_mask):
     for key in list(state_dict.keys()):
         if 'module.' in key:
             state_dict[key.replace('module.', '')] = state_dict.pop(key)
-    teacher_model.load_state_dict(state_dict)
+
     best_acc = checkpoint['best_acc']
     best_acc = best_acc.to()
-    teacher_model.eval()
+
     # print(model)
 
     # optimizer = optim.SGD(model.parameters(), lr=0.001)
